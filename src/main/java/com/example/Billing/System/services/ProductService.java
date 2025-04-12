@@ -76,7 +76,7 @@ public class ProductService {
             throw new RuntimeException("Product Not Found");
         }
         try {
-            productRepository.deleteByProdId(id);
+            productRepository.deleteById(id);
 
         }
         catch (Exception e){

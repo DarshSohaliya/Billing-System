@@ -1,9 +1,8 @@
 package com.example.Billing.System.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 public class Customer {
@@ -11,7 +10,8 @@ public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long customer_id;
-
+    private Long mobile;
+    private String name;
     public Long getCustomer_id() {
         return customer_id;
     }
@@ -20,11 +20,11 @@ public class Customer {
         this.customer_id = customer_id;
     }
 
-    public int getMobile() {
+    public Long getMobile() {
         return mobile;
     }
 
-    public void setMobile(int mobile) {
+    public void setMobile(Long mobile) {
         this.mobile = mobile;
     }
 
@@ -36,7 +36,9 @@ public class Customer {
         this.name = name;
     }
 
-    private int mobile;
-    private String name;
+
+
+
+
 
 }

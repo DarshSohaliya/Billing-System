@@ -47,4 +47,5 @@ public class Product {
 
     private int stockCount;
 
+
 }

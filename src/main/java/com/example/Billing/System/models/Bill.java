@@ -1,5 +1,6 @@
 package com.example.Billing.System.models;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.sql.Date;
@@ -60,6 +61,16 @@ public class Bill {
     @ManyToOne
     private Customer customer;
 
-    @OneToMany
+    public List<BillItem> getBillItemList() {
+        return billItemList;
+    }
+
+    public void setBillItemList(List<BillItem> billItemList) {
+        this.billItemList = billItemList;
+    }
+
+
+    @OneToMany(mappedBy = "bill",cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<BillItem> billItemList;
 }

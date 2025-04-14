@@ -1,5 +1,6 @@
 package com.example.Billing.System.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 @Entity
@@ -54,5 +55,6 @@ public class BillItem {
     private Product product;
 
     @ManyToOne
+    @JsonBackReference
     private Bill bill;
 }

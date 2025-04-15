@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -11,16 +12,29 @@ public class Bill {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long bill_id;
+    private Long billId;
 
     private Date date;
+    private double amount;
+    private double gst;
 
-    public Long getBill_id() {
-        return bill_id;
+    @ManyToOne
+    private Customer customer;
+
+    private double amountPaid;
+    private String paymentStatus;
+
+    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<BillItem> billItemList;
+
+    // Getters and Setters
+    public Long getBillId() {
+        return billId;
     }
 
-    public void setBill_id(Long bill_id) {
-        this.bill_id = bill_id;
+    public void setBillId(Long billId) {
+        this.billId = billId;
     }
 
     public Date getDate() {
@@ -31,12 +45,12 @@ public class Bill {
         this.date = date;
     }
 
-    public double getAmout() {
-        return amout;
+    public double getAmount() {
+        return amount;
     }
 
-    public void setAmout(double amout) {
-        this.amout = amout;
+    public void setAmount(double amount) {
+        this.amount = amount;
     }
 
     public double getGst() {
@@ -47,6 +61,22 @@ public class Bill {
         this.gst = gst;
     }
 
+    public double getAmountPaid() {
+        return amountPaid;
+    }
+
+    public void setAmountPaid(double amountPaid) {
+        this.amountPaid = amountPaid;
+    }
+
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
     public Customer getCustomer() {
         return customer;
     }
@@ -54,12 +84,6 @@ public class Bill {
     public void setCustomer(Customer customer) {
         this.customer = customer;
     }
-
-    private double amout;
-    private double gst;
-
-    @ManyToOne
-    private Customer customer;
 
     public List<BillItem> getBillItemList() {
         return billItemList;
@@ -69,8 +93,13 @@ public class Bill {
         this.billItemList = billItemList;
     }
 
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "bill",cascade = CascadeType.ALL)
-    @JsonManagedReference
-    private List<BillItem> billItemList;
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+    }
+
+
 }

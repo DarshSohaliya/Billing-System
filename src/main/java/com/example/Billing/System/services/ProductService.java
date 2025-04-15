@@ -64,6 +64,7 @@ public class ProductService {
           product1.setName(product.getName());
           product1.setPrice(product.getPrice());
           product1.setStockCount(product.getStockCount());
+          product1.setMinStockThreshold(product.getMinStockThreshold());
        }
        catch (Exception e){
             throw  new RuntimeException("Product was Not Updated");

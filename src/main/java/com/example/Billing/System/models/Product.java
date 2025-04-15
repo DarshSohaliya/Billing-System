@@ -11,7 +11,18 @@ public class Product {
     @Column(name = "prod_id")
     private Long prodId;
     private String name;
+
+    public int getMinStockThreshold() {
+        return minStockThreshold;
+    }
+
+    public void setMinStockThreshold(int minStockThreshold) {
+        this.minStockThreshold = minStockThreshold;
+    }
+
+
     private double price;
+    private int minStockThreshold;
 
     public Long getProdId() {
         return prodId;

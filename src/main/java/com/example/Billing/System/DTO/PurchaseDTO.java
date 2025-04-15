@@ -12,21 +12,15 @@ public class PurchaseDTO {
         this.customerName = customerName;
     }
 
-    public Long getMobileNumber() {
+    public String getMobileNumber() {
         return mobileNumber;
     }
 
-    public void setMobileNumber(Long mobileNumber) {
+    public void setMobileNumber(String mobileNumber) {
         this.mobileNumber = mobileNumber;
     }
 
-    public Long getProdId() {
-        return prodId;
-    }
 
-    public void setProdId(Long prodId) {
-        this.prodId = prodId;
-    }
 
     public int getQuantity() {
         return quantity;
@@ -36,8 +30,18 @@ public class PurchaseDTO {
         this.quantity = quantity;
     }
 
-    private Long mobileNumber;
-    private Long prodId;
+    private String mobileNumber;
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    private String productName;
+
     private int quantity;
 
 

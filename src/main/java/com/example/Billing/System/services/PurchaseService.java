@@ -1,5 +1,7 @@
 package com.example.Billing.System.services;
 
+import com.example.Billing.System.DTO.BillDTO;
+import com.example.Billing.System.DTO.ProductItemDTO;
 import com.example.Billing.System.DTO.PurchaseDTO;
 import com.example.Billing.System.Repositorys.BillItemRepository;
 import com.example.Billing.System.Repositorys.BillRepository;
@@ -32,14 +34,17 @@ public class PurchaseService {
     ProductRepository productRepository;
 
 
-    public Bill purchase(PurchaseDTO purchaseDTO) {
+    @Autowired
+    WhatsappService whatsappService;
+
+    public BillDTO purchase(PurchaseDTO purchaseDTO) {
 
         Customer customer = new Customer();
         customer.setName(purchaseDTO.getCustomerName());
         customer.setMobile(purchaseDTO.getMobileNumber());
         customer  = customerRepository.save(customer);
 
-        Product product = productRepository.findByProdId(purchaseDTO.getProdId());
+        Product product = productRepository.findByname(purchaseDTO.getProductName());
 
         if(purchaseDTO.getQuantity() > product.getStockCount()){
             throw  new RuntimeException("Stock is not available");
@@ -54,14 +59,15 @@ public class PurchaseService {
 
         Bill bill = new Bill();
         bill.setDate(Date.valueOf(LocalDate.now()));
-        bill.setAmout(total);
+        bill.setAmount(total);
         bill.setGst(gst);
         bill.setCustomer(customer);
+        bill.setPaymentStatus("UNPAID");
         bill = billRepository.save(bill);
 
         BillItem billItem  = new BillItem();
         billItem.setBill(bill);
-        billItem.setProduct(product);
+        billItem.setProductName(product.getName());
         billItem.setQuantity(quantity);
         billItem.setSubtotal(subtotal);
         billItem = billItemRepository.save(billItem);
@@ -71,6 +77,31 @@ public class PurchaseService {
         product.setStockCount(product.getStockCount() - quantity);
         productRepository.save(product);
 
-        return  bill;
+        ProductItemDTO productItemDTO =new ProductItemDTO();
+        productItemDTO.setProductName(purchaseDTO.getProductName());
+        productItemDTO.setTotalPrice(billItem.getSubtotal());
+        productItemDTO.setQuantity(purchaseDTO.getQuantity());
+
+        BillDTO billDTO = new BillDTO();
+        billDTO.setCustomerName(bill.getCustomer().getName());
+        billDTO.setPurchaseDate(bill.getDate());
+        billDTO.setBillId(bill.getBillId());
+        billDTO.setGstAmount(bill.getGst());
+        billDTO.setSubTotal(bill.getAmount());
+        billDTO.setPaymentStatus(bill.getPaymentStatus());
+        billDTO.setTotalAmount(billItem.getSubtotal());
+        billDTO.setCustomerMobile(bill.getCustomer().getMobile());
+        billDTO.setItems(Collections.singletonList(productItemDTO));
+
+        if (product.getStockCount() < product.getMinStockThreshold()) {
+            String adminNumber = "+916351029290"; // replace with real admin number
+            String alertMessage = "⚠️ Low stock alert!\nProduct: " + product.getName() +
+                    "\nRemaining: " + product.getStockCount();
+            whatsappService.sendMessage(adminNumber, alertMessage);
+        }
+
+
+
+        return  billDTO;
     }
 }

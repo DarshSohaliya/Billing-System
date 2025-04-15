@@ -4,10 +4,13 @@ import com.example.Billing.System.Repositorys.BillRepository;
 import com.example.Billing.System.models.Bill;
 import com.example.Billing.System.models.BillItem;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -19,7 +22,9 @@ public class DailyReportSender {
     @Autowired
     EmailService emailService;
 
-    @Scheduled(cron = "0 0 21 * * *")
+    @Scheduled(fixedRate = 1000)
+
+
     @Transactional
     public void sendDailyReport(){
        LocalDate reportDate =  LocalDate.now();
@@ -27,23 +32,33 @@ public class DailyReportSender {
         List<Bill> bills = billRepository.findByDate(reportDate);
 
         StringBuilder report = new StringBuilder("Billing Report for " + reportDate + "\n\n");
-
+        report.append("Customer,Product,Quantity,Subtotal,Total Amount,GST,Amount Paid,Payment Status\n");
         for (Bill bill : bills) {
-            report.append("Customer :").append(bill.getCustomer()).append("\n");
+
+           String CustomerName = bill.getCustomer().getName();
+
 
             for(BillItem item : bill.getBillItemList()) {
-                    report.append("Product :").append(item.getProductName())
-                        .append("Quantity :").append(item.getQuantity())
-                        .append("Total :").append(item.getSubtotal())
-                        .append("\n");
+                   report.append("Customer :").append(CustomerName).append("\n")
+                           .append("Product :").append(item.getProductName()).append("\n")
+                           .append("Quantity :").append(item.getQuantity()).append("\n")
+                           .append("SubTotal :").append(item.getSubtotal()).append("\n")
+                           .append("Amount :").append(item.getBill().getAmount()).append("\n")
+                           .append("Product :").append(item.getBill().getGst()).append("\n")
+                           .append("Product :").append(item.getBill().getAmountPaid()).append("\n")
+                           .append("Product :").append(item.getBill().getPaymentStatus()).append("\n");
+
+
             }
 
-            report.append("Total Amount :").append(bill.getAmout()).append("\n")
-                    .append("GST :").append(bill.getGst()).append("\n")
-                    .append("Amount Paid").append(bill.getAmountPaid()).append("\n")
-                    .append("Payment Status:").append(bill.getPaymentStatus()).append("\n");
         }
+        byte[] csvByte = report.toString().getBytes(StandardCharsets.UTF_8);
+        InputStreamSource attachment = new ByteArrayResource(csvByte);
         
-        emailService.sendMailWithReport("gopalsohaliya@gmail.com","Daily Billin Report - " + reportDate , report.toString());
+        emailService.sendMailWithReport("darshsohaliya@gmail.com",
+                "Daily Billin Report - " + reportDate ,
+                "Please find the attached billing report for " + reportDate,
+                attachment,
+                "BillingReport-" + reportDate + ".csv");
     }
 }

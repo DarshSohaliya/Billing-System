@@ -1,6 +1,7 @@
 package com.example.Billing.System.models;
 
 import jakarta.persistence.*;
+import org.apache.catalina.LifecycleState;
 
 import java.util.List;
 
@@ -9,22 +10,35 @@ public class Customer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long customer_id;
-    private Long mobile;
+    private Long customerId;
+    private String mobile;
     private String name;
-    public Long getCustomer_id() {
-        return customer_id;
+
+    public List<Bill> getBillList() {
+        return billList;
     }
 
-    public void setCustomer_id(Long customer_id) {
-        this.customer_id = customer_id;
+    public void setBillList(List<Bill> billList) {
+        this.billList = billList;
     }
 
-    public Long getMobile() {
+    public Long getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
+    }
+
+    @OneToMany(mappedBy = "customer")
+    private List<Bill> billList;
+
+
+    public String getMobile() {
         return mobile;
     }
 
-    public void setMobile(Long mobile) {
+    public void setMobile(String mobile) {
         this.mobile = mobile;
     }
 

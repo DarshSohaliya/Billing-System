@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 public interface ProductRepository extends JpaRepository<Product,Long> {
     Product findByProdId(long prodId);
 
-//    @Query("DELETE FROM Product p WHERE p.prodId = :prodId")
-//    void  deleteByProdId(@Param("prodId") long prodId);
+   Product findByname(String name);
 
 }

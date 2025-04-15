@@ -8,17 +8,15 @@ public class BillItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private String productName;
     private int quantity;
     private double subtotal;
 
-    public Product getProduct() {
-        return product;
-    }
+    @ManyToOne
+    private Bill bill;
 
-    public void setProduct(Product product) {
-        this.product = product;
-    }
-
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -27,12 +25,12 @@ public class BillItem {
         this.id = id;
     }
 
-    public double getSubtotal() {
-        return subtotal;
+    public String getProductName() {
+        return productName;
     }
 
-    public void setSubtotal(double subtotal) {
-        this.subtotal = subtotal;
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
 
     public int getQuantity() {
@@ -43,6 +41,14 @@ public class BillItem {
         this.quantity = quantity;
     }
 
+    public double getSubtotal() {
+        return subtotal;
+    }
+
+    public void setSubtotal(double subtotal) {
+        this.subtotal = subtotal;
+    }
+
     public Bill getBill() {
         return bill;
     }
@@ -51,10 +57,5 @@ public class BillItem {
         this.bill = bill;
     }
 
-     @ManyToOne
-    private Product product;
 
-    @ManyToOne
-    @JsonBackReference
-    private Bill bill;
 }

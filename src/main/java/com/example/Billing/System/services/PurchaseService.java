@@ -12,11 +12,15 @@ import com.example.Billing.System.models.BillItem;
 import com.example.Billing.System.models.Customer;
 import com.example.Billing.System.models.Product;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class PurchaseService {
@@ -37,71 +41,128 @@ public class PurchaseService {
     @Autowired
     WhatsappService whatsappService;
 
-    public BillDTO purchase(PurchaseDTO purchaseDTO) {
+    @Autowired
+    PaymentService paymentService;
 
-        Customer customer = new Customer();
-        customer.setName(purchaseDTO.getCustomerName());
-        customer.setMobile(purchaseDTO.getMobileNumber());
-        customer  = customerRepository.save(customer);
+    public ResponseEntity<?> purchase(PurchaseDTO purchaseDTO) throws Exception {
 
-        Product product = productRepository.findByname(purchaseDTO.getProductName());
 
-        if(purchaseDTO.getQuantity() > product.getStockCount()){
-            throw  new RuntimeException("Stock is not available");
+        System.out.println(purchaseDTO.getPaymentId());
+
+       boolean paymentSuccess = paymentService.verifyPayment(String.valueOf(purchaseDTO.getPaymentId()));
+        Customer customer = customerRepository.findBycustomerId(purchaseDTO.getCustomerId());
+
+
+        String userPhone = purchaseDTO.getMobileNumber();
+       String name = purchaseDTO.getCustomerName();
+
+   double subtotal =0;
+      System.out.println(paymentSuccess);
+
+        if (!paymentSuccess){
+
+            String failMessage = "❌ Hello " + name + ", your payment failed. Please try again.";
+            whatsappService.sendWhatsApp(userPhone, failMessage);
+           whatsappService.sendSMS(userPhone, failMessage);
+
+            throw new RuntimeException("Payment Failed !!");
         }
 
-        double price = product.getPrice();
-        int quantity = purchaseDTO.getQuantity();
-        double subtotal = price * quantity;
-        double gst = subtotal * 0.18;
-        double total = subtotal + gst;
+
+//        Customer customer = new Customer();
+//        customer.setName(purchaseDTO.getCustomerName());
+//        customer.setMobile(purchaseDTO.getMobileNumber());
+//        customer  = customerRepository.save(customer);
 
 
         Bill bill = new Bill();
         bill.setDate(Date.valueOf(LocalDate.now()));
-        bill.setAmount(total);
-        bill.setGst(gst);
         bill.setCustomer(customer);
-        bill.setPaymentStatus("UNPAID");
+        bill.setPaymentStatus("PAID");
         bill = billRepository.save(bill);
+        List<BillItem> billItems = new ArrayList<>();
+        List<ProductItemDTO> productItemDTOList = new ArrayList<>();
+        System.out.println("Items received: " + purchaseDTO.getItems());
 
-        BillItem billItem  = new BillItem();
-        billItem.setBill(bill);
-        billItem.setProductName(product.getName());
-        billItem.setQuantity(quantity);
-        billItem.setSubtotal(subtotal);
-        billItem = billItemRepository.save(billItem);
+        for(ProductItemDTO item:purchaseDTO.getItems()){
+            String prodname = item.getProductName();
+            System.out.println(prodname);
 
-        bill.setBillItemList(Collections.singletonList(billItem));
+            Product product = productRepository.findByname(prodname);
 
-        product.setStockCount(product.getStockCount() - quantity);
-        productRepository.save(product);
 
-        ProductItemDTO productItemDTO =new ProductItemDTO();
-        productItemDTO.setProductName(purchaseDTO.getProductName());
-        productItemDTO.setTotalPrice(billItem.getSubtotal());
-        productItemDTO.setQuantity(purchaseDTO.getQuantity());
+            if (product == null) {
+                throw new RuntimeException("Product not found: " + item.getProductName());
+            }
 
-        BillDTO billDTO = new BillDTO();
-        billDTO.setCustomerName(bill.getCustomer().getName());
-        billDTO.setPurchaseDate(bill.getDate());
-        billDTO.setBillId(bill.getBillId());
-        billDTO.setGstAmount(bill.getGst());
-        billDTO.setSubTotal(bill.getAmount());
-        billDTO.setPaymentStatus(bill.getPaymentStatus());
-        billDTO.setTotalAmount(billItem.getSubtotal());
-        billDTO.setCustomerMobile(bill.getCustomer().getMobile());
-        billDTO.setItems(Collections.singletonList(productItemDTO));
+            if(item.getQuantity() > product.getStockCount()){
+                throw new RuntimeException("Stock not available for: " + product.getName());
+            }
 
-        if (product.getStockCount() < product.getMinStockThreshold()) {
-            String adminNumber = "+916351029290"; // replace with real admin number
-            String alertMessage = "⚠️ Low stock alert!\nProduct: " + product.getName() +
-                    "\nRemaining: " + product.getStockCount();
-            whatsappService.sendMessage(adminNumber, alertMessage);
+            double itemSubtotal = product.getPrice() * item.getQuantity();
+            subtotal += itemSubtotal;
+
+            BillItem billItem  = new BillItem();
+            billItem.setProductName(product.getName());
+            billItem.setQuantity(item.getQuantity());
+            billItem.setSubtotal(itemSubtotal);
+            billItem = billItemRepository.save(billItem);
+            billItems.add(billItem);
+
+
+            product.setStockCount(product.getStockCount() - item.getQuantity());
+            productRepository.save(product);
+
+            ProductItemDTO productItemDTO =new ProductItemDTO();
+            productItemDTO.setProductName(product.getName());
+            productItemDTO.setTotalPrice(itemSubtotal);
+            productItemDTO.setQuantity(item.getQuantity());
+            productItemDTOList.add(productItemDTO);
+
+            if (product.getStockCount() < product.getMinStockThreshold()) {
+                String adminNumber = "+916351029290"; // replace with real admin number
+                String alertMessage = "⚠️ Low stock alert!\nProduct: " + product.getName() +
+                        "\nRemaining: " + product.getStockCount();
+                whatsappService.sendSMS(adminNumber, alertMessage);
+                whatsappService.sendWhatsApp(adminNumber,alertMessage);
+            }
+
         }
 
+//        double price = product.getPrice();
+//        int quantity = purchaseDTO.getQuantity();
+//        double subtotal = 0;
+        double gst = subtotal * 0.18;
+        double total = subtotal + gst;
 
 
-        return  billDTO;
+        bill.setAmount(total);
+        bill.setGst(gst);
+        bill.setBillItemList(billItems);
+        billRepository.save(bill);
+
+
+            String message = "✅ Hello " + name + ", your payment of ₹" + total + " was successful. Thank you for your purchase!";
+            whatsappService.sendSMS(userPhone,message);
+            whatsappService.sendWhatsApp(userPhone,message);
+
+
+
+        BillDTO billDTO = new BillDTO();
+        billDTO.setCustomerName(customer.getName());
+        billDTO.setCustomerMobile(customer.getMobile());
+        billDTO.setPurchaseDate(bill.getDate());
+        billDTO.setBillId(bill.getBillId());
+        billDTO.setGstAmount(gst);
+        billDTO.setSubTotal(subtotal);
+        billDTO.setTotalAmount(total);
+        billDTO.setPaymentStatus(bill.getPaymentStatus());
+        billDTO.setItems(productItemDTOList);
+
+
+
+
+
+        return ResponseEntity.ok(billDTO);
     }
 }

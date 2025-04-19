@@ -11,14 +11,6 @@ public class ProductItemDTO {
         this.totalPrice = totalPrice;
     }
 
-    public double getUnitPrice() {
-        return unitPrice;
-    }
-
-    public void setUnitPrice(double unitPrice) {
-        this.unitPrice = unitPrice;
-    }
-
     public int getQuantity() {
         return quantity;
     }
@@ -36,7 +28,7 @@ public class ProductItemDTO {
     }
 
     private int quantity;
-    private double unitPrice;
+
     private double totalPrice;
 
 }

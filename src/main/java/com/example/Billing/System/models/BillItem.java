@@ -14,9 +14,10 @@ public class BillItem {
     private double subtotal;
 
     @ManyToOne
+    @JsonBackReference
     private Bill bill;
 
-    // Getters and Setters
+
     public Long getId() {
         return id;
     }

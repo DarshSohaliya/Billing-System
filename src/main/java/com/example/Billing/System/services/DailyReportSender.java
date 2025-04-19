@@ -22,7 +22,7 @@ public class DailyReportSender {
     @Autowired
     EmailService emailService;
 
-    @Scheduled(fixedRate = 1000)
+//    @Scheduled(fixedRate = 1000)
 
 
     @Transactional
@@ -45,7 +45,7 @@ public class DailyReportSender {
                            .append("SubTotal :").append(item.getSubtotal()).append("\n")
                            .append("Amount :").append(item.getBill().getAmount()).append("\n")
                            .append("Product :").append(item.getBill().getGst()).append("\n")
-                           .append("Product :").append(item.getBill().getAmountPaid()).append("\n")
+                          // .append("Product :").append(item.getBill().getAmountPaid()).append("\n")
                            .append("Product :").append(item.getBill().getPaymentStatus()).append("\n");
 
 
@@ -55,7 +55,7 @@ public class DailyReportSender {
         byte[] csvByte = report.toString().getBytes(StandardCharsets.UTF_8);
         InputStreamSource attachment = new ByteArrayResource(csvByte);
         
-        emailService.sendMailWithReport("darshsohaliya@gmail.com",
+        emailService.sendMailWithReport("gopalsohaliya@gmail.com",
                 "Daily Billin Report - " + reportDate ,
                 "Please find the attached billing report for " + reportDate,
                 attachment,

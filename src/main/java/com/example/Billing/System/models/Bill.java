@@ -21,14 +21,13 @@ public class Bill {
     @ManyToOne
     private Customer customer;
 
-    private double amountPaid;
     private String paymentStatus;
 
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<BillItem> billItemList;
 
-    // Getters and Setters
+
     public Long getBillId() {
         return billId;
     }
@@ -61,13 +60,7 @@ public class Bill {
         this.gst = gst;
     }
 
-    public double getAmountPaid() {
-        return amountPaid;
-    }
 
-    public void setAmountPaid(double amountPaid) {
-        this.amountPaid = amountPaid;
-    }
 
     public String getPaymentStatus() {
         return paymentStatus;

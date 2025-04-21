@@ -13,6 +13,7 @@ import com.example.Billing.System.services.PaymentService;
 import com.example.Billing.System.services.PurchaseService;
 import com.razorpay.PaymentLink;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,22 +40,22 @@ public class PurchaseController {
         Customer customer = customerRepository.findBycustomerId(purchaseDTO.getCustomerId());
 
         if(customer == null){
-            throw  new RuntimeException("Without user Purchase Can not Make");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Without User CanNot Purchase");
         }
-         double subtotal=0;
+
         try {
+                   purchaseService.validateProductStock(purchaseDTO.getItems());
+            double subtotal=purchaseService.calculateSubtotal(purchaseDTO.getItems());
 
-            System.out.println("ITEMS:::"+purchaseDTO.getItems());
-            for(ProductItemDTO item : purchaseDTO.getItems()) {
-                String prodname = item.getProductName();
-                System.out.println("NAME:::"+prodname);
-                Product product = productRepository.findByname(prodname);
-
-                if (item.getQuantity() > product.getStockCount()) {
-                    throw new RuntimeException("Stock is Unavailable");
-                }
-                subtotal += item.getQuantity() * product.getPrice();
-            }
+//            System.out.println("ITEMS:::"+purchaseDTO.getItems());
+//            for(ProductItemDTO item : purchaseDTO.getItems()) {
+//                String prodname = item.getProductName();
+//                System.out.println("NAME:::"+prodname);
+//                Product product = productRepository.findByname(prodname);
+//
+//               purchaseService.validateProductStock(purchaseDTO.getItems());
+//                subtotal += item.getQuantity() * product.getPrice();
+//            }
 //            double subtotal = purchaseDTO.getQuantity() * product.getPrice();
             double gst  = subtotal * 0.18;
             double total = subtotal + gst;
@@ -69,19 +70,19 @@ public class PurchaseController {
                     customer.getName(),
                     customer.getMobile(),
                     purchaseDTO.getItems());
-
-             purchaseDTO.setPaymentId(checkoutUrl.getPaymentLinkId());
+                System.out.println("PAYMENTLINKID::::" + checkoutUrl.getPaymentLinkId());
+             purchaseDTO.setPaymentLinkId(checkoutUrl.getPaymentLinkId());
 
             return ResponseEntity.ok(Map.of("paymentLink",checkoutUrl,"amount",total));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+               return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Payment not SuccessFull!!");
         }
 
     }
 
     @PostMapping("/purchase/conform")
     public ResponseEntity<?> payment(@RequestBody  PurchaseDTO purchaseDTO) throws Exception {
-        System.out.println("Payment ID received: " + purchaseDTO.getPaymentId());
+        System.out.println("Payment ID received: " + purchaseDTO.getPaymentLinkId());
       return  purchaseService.purchase(purchaseDTO);
 
     }

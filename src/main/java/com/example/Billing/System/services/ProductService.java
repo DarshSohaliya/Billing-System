@@ -72,16 +72,17 @@ public class ProductService {
         return productRepository.save(product1);
     }
 
-    public void Delete(Long id) {
+    public ResponseEntity<?> Delete(Long id) {
         if(!productRepository.existsById(id)){
-            throw new RuntimeException("Product Not Found");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product is not found");
         }
         try {
             productRepository.deleteById(id);
 
         }
         catch (Exception e){
-            throw  new RuntimeException("Product Was not Deleted");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product is not Deleted");
         }
+        return ResponseEntity.ok(200);
     }
 }

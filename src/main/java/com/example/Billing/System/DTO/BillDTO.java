@@ -38,7 +38,7 @@ public class BillDTO {
         this.customerMobile = customerMobile;
     }
 
-    public Date getPurchaseDate() {
+    public Date getPurchaseDate(Date date) {
         return purchaseDate;
     }
 

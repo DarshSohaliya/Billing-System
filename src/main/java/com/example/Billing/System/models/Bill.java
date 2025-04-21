@@ -60,8 +60,6 @@ public class Bill {
         this.gst = gst;
     }
 
-
-
     public String getPaymentStatus() {
         return paymentStatus;
     }

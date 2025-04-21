@@ -39,12 +39,12 @@ public class PaymentService {
     public PaymentResponseDTO createPayment(double amount, Long CustomerId, String customerName, String mobileNumber, List<ProductItemDTO> items) throws Exception {
         try {
             JSONObject request = new JSONObject();
-            request.put("amount", (int) (amount * 100)); // Razorpay expects amount in paise
+            request.put("amount", (int) (amount * 100));
             request.put("currency", "INR");
             request.put("description", "Product Purchase");
-//            request.put();  // Pass the provided payment ID
+//
 
-            // Add customer details in the notes
+
             JSONObject notes = new JSONObject();
             notes.put("customerId", CustomerId);
             notes.put("customerName", customerName);
@@ -61,9 +61,8 @@ public class PaymentService {
             notes.put("items", itemsArray);
             request.put("notes", notes);
 
-            // Set notifications and reminder settings
-            request.put("notify", new JSONObject().put("sms", true));  // Enable SMS notifications
-            request.put("reminder_enable", true);  // Enable reminder
+            request.put("notify", new JSONObject().put("sms", true));
+            request.put("reminder_enable", true);
 
 
             PaymentLink paymentLink = razorpay.paymentLink.create(request);
@@ -96,7 +95,7 @@ public class PaymentService {
             }
 
         } catch (Exception e) {
-            System.out.println("Error verifying payment link: " + e.getMessage());
+            System.out.println("Error  payment link: " + e.getMessage());
             return false;
         }
 }

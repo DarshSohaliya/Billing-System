@@ -32,7 +32,7 @@ public class PurchaseDTO {
 //        this.customer = customer;
 //    }
 
-    private String paymentId;
+    private String paymentlinkId;
     private List<ProductItemDTO> items;
 
     public List<ProductItemDTO> getItems() {
@@ -43,12 +43,12 @@ public class PurchaseDTO {
         this.items = items;
     }
 
-    public String getPaymentId() {
-        return paymentId;
+    public String getPaymentLinkId() {
+        return paymentlinkId;
     }
 
-    public void setPaymentId(String paymentId) {
-        this.paymentId = paymentId;
+    public void setPaymentLinkId(String paymentlinkId) {
+        this.paymentlinkId = paymentlinkId;
     }
 
 //    public String getCustomerName() {
